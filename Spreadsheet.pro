@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2014-05-08T22:40:51
+# Project created by QtCreator 2014-05-08T20:07:38
 #
 #-------------------------------------------------
 
@@ -13,6 +13,16 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    finddialog.cpp \
+    gotocelldialog.cpp \
+    sortdialog.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    finddialog.h \
+    gotocelldialog.h \
+    sortdialog.h
+
+FORMS += \
+    gotocelldialog.ui \
+    sortdialog.ui
