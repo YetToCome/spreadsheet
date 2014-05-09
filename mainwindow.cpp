@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QFileDialog>
 #include <QEvent>
+#include <QSettings>
 #include <QMutableStringListIterator>
 #include "finddialog.h"
 #include "gotocelldialog.h"
@@ -277,4 +278,67 @@ void MainWindow::openRecentFile() {
         if (action)
             loadFile(action->data().toString());
     }
+}
+
+void MainWindow::find() {
+    if (!findDialog) {
+        findDialog = new findDialog(this);
+        connect(findDialog, SIGNAL(findNext(const QString&,Qt::CaseSensitivity)), spreadsheet,
+                                   SLOT(findNext(const QString&, Qt::CaseSensitivity)));
+        connect(findDialog, SIGNAL(findPrevious(const QString& ,Qt::CaseSensitivity)), spreadsheet,
+                           SLOT(findPrevious(const QString&, Qt::CaseSensitivity)));
+    }
+    findDialog->show();
+    findDialog->raise();
+    findDialog->activateWindow();
+}
+
+void MainWindow::goToCell() {
+    GoToCellDialog *dialog = new GoToCellDialog(this);
+    if (dialog->exec()) {
+        QString str = dialog->lineEdit->text().toUpper();
+        spreadsheet->setCurrentCell(str.mid(1).toInt() - 1, str[0].unicode() - 'A');
+    }
+    delete dialog;
+}
+
+void MainWindow::sort() {
+    SortDialog dialog(this);
+    QTableWidgetSelectionRange range = spreadsheet->selectedRange();
+    dialog.setColumnRange('A' + range.leftColumn(), 'A' + range.rightColumn());
+    if (dialog.exec())
+        spreadsheet->performSort(dialog.comparisonObject());
+}
+
+void MainWindow::about() {
+    QMessageBox::about(this, tr("About spreadsheet"), tr("<h2>Spreadsheet 1.1</h2>"
+                                                         "<p>Copyrigth &copy; 2014 Software Inc."
+                                                         "<p>Spreadsheet is a small application that"
+                                                         "demonstrates QAction, QMainWindow, QMenuBar, and"
+                                                         "many other Qt classes"));
+}
+
+void MainWindow::writeSettings() {
+    QSettings settings("Software Inc.", "Spreadsheet");
+
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("recentFiles", recentFiles);
+    settings.setValue("showGrid", showGridAction->isChecked());
+    settings.setValue("aboutRecalc", autoRecalcAction->isChecked());
+
+}
+
+void MainWindow::readSettings() {
+    QSettings settings("Software Inc.", "Spreadsheet");
+
+    restoreGeometry(settings.value("geometry").toBitArray());
+
+    recentFiles = settings.value("recentFiles").toStringList();
+    updateRencentFileActions();
+
+    bool showGrid = settings.value("showGrid", true).toBool();
+    showGridAction->setChecked(showGrid);
+
+    bool autoRecalc = settings.value("autoRecalc", true).toBool();
+    autoRecalcAction->setChecked(autoRecalc);
 }
