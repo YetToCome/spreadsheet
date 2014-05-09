@@ -14,7 +14,7 @@ public:
     bool autoRecalcuate() const { return autoRecalc;}
     QString currentLocation() const;
     QString currentFormula() const;
-    QTableWidgetSelectionRange selectedRanges() const;
+    QTableWidgetSelectionRange selectedRange() const;
     void clear();
     bool readFile(const QString &fileName);
     bool writeFile(const QString &fileName);
@@ -30,6 +30,7 @@ public slots:
     void recalculate();
     void setAutoRecalculate(bool recalc);
     void findNext(const QString &str, Qt::CaseSensitivity cs);
+    void findPrevios(const QString &str, Qt::CaseSensitivity cs);
 
 signals:
     void modified();
