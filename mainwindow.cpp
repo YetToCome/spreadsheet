@@ -3,15 +3,19 @@
 #include <QLabel>
 #include <QAction>
 #include <QMenu>
+#include <QMenuBar>
 #include <QFileDialog>
 #include <QEvent>
+#include <QCloseEvent>
 #include <QSettings>
+#include <QToolBar>
+#include <QStatusBar>
 #include <QMutableStringListIterator>
 #include "finddialog.h"
 #include "gotocelldialog.h"
 #include "sortdialog.h"
 #include "mainwindow.h"
-#include "spreadsheet.h"
+//#include "spreadsheet.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -33,19 +37,37 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 }
 
 void MainWindow::createActions() {
-    newAction = new Action(tr("&New"), this);
+    newAction = new QAction(tr("&New"), this);
     newAction->setIcon(QIcon(":/images/new.png"));
     newAction->setShortcut(QKeySequence::New);
     newAction->setStatusTip(tr("Create a new spreadsheet file"));
     connect(newAction, SIGNAL(triggered()), this, SLOT(newFile()));
-    
+
+
+    openAction = new QAction(tr("&Open"), this);
+    openAction->setIcon(QIcon(":/images/open.png"));
+    openAction->setShortcut(QKeySequence::Open);
+    openAction->setStatusTip(tr("Open a spreadsheet file"));
+    connect(newAction, SIGNAL(triggered()), this, SLOT(openFile()));
+
+    saveAction = new QAction(tr("&Save"), this);
+    saveAction->setIcon(QIcon(":/images/save.png"));
+    saveAction->setShortcut(QKeySequence::Save);
+    saveAction->setStatusTip(tr("Save a spreadsheet file"));
+    connect(newAction, SIGNAL(triggered()), this, SLOT(saveFile()));
+
+    saveAsAction = new QAction(tr("Save a&s"), this);
+    saveAsAction->setIcon(QIcon(":/images/saveAs.png"));
+    saveAsAction->setShortcut(QKeySequence::SaveAs);
+    saveAsAction->setStatusTip(tr("Save as a spreadsheet file"));
+    connect(newAction, SIGNAL(triggered()), this, SLOT(saveFile()));
     //
     for (int i = 0; i < MaxRecentFiles; ++i) {
-        recentFileActions[i] = newAction(this);
+        recentFileActions[i] = new QAction(this);
         recentFileActions[i]->setVisible(false);
         connect(recentFileActions[i], SIGNAL(triggered()),this, SLOT(openRecentFile()));
     }
-    exitAction = new Action(tr("E&xit"), this);
+    exitAction = new QAction(tr("E&xit"), this);
     exitAction->setShortcut(tr("Ctrl+Q"));
     exitAction->setStatusTip(tr("Exit the application"));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
@@ -61,7 +83,7 @@ void MainWindow::createActions() {
     showGridAction->setCheckable(true);
     showGridAction->setChecked(spreadsheet->showGrid());
     showGridAction->setStatusTip(tr("Show or hide the spreadsheet's grid"));
-    connect(showGridAction, SIGNAL(toggled(bool)), spreadsheet, SLOT(setShowGrid));
+    connect(showGridAction, SIGNAL(toggled(bool)), spreadsheet, SLOT(setShowGrid(bool)));
 
     //
     aboutQtAction = new QAction(tr("About &Qt"), this);
@@ -97,7 +119,7 @@ void MainWindow::createMenus() {
     editMenu->addAction(findAction);
     editMenu->addAction(goToCellAction);
 
-    toolsMenu = MenuBar()->addMenu(tr(&Tools));
+    toolsMenu = menuBar()->addMenu(tr("&Tools"));
     toolsMenu->addAction(recalculateAction);
     toolsMenu->addAction(sortAction);
 
@@ -105,7 +127,7 @@ void MainWindow::createMenus() {
     optionMenu->addAction(showGridAction);
     optionMenu->addAction(autoRecalcAction);
 
-    menuBar->addSeparator();
+    menuBar()->addSeparator();
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAction);
@@ -331,7 +353,7 @@ void MainWindow::writeSettings() {
 void MainWindow::readSettings() {
     QSettings settings("Software Inc.", "Spreadsheet");
 
-    restoreGeometry(settings.value("geometry").toBitArray());
+    restoreGeometry(settings.value("geometry").toByteArray());
 
     recentFiles = settings.value("recentFiles").toStringList();
     updateRencentFileActions();
